@@ -1,4 +1,4 @@
-# :dog2: bonbon/ImageBind
+# :dog2: bonbon x​ ​ImageBind
 
 ImageBind: https://github.com/facebookresearch/ImageBind
 
@@ -6,20 +6,54 @@ ImageBind: https://github.com/facebookresearch/ImageBind
 
 ## Prerequisites
 
-* Increase the swap size to 2048MB.
+* Increase the Pi's swap size to 2048MB.
+* Disable the Pi's GUI before running scripts that use ImageBind.
+
+<br />
+
+## Directory structure
+
+### Raspberry Pi
+
+```bash
+/home/pi
+├── ...
+├── Projects
+│   └── Playpen
+│       └── imagebind            <-- mapped to Docker image/containers's /app/scripts directory
+│           ├── example.ipynb
+│           ├── processing.ipynb
+│           └── search.py
+└── ... 
+```
+
+### Docker Image/Container
+
+```bash
+app
+├── .packages                   <-- manually compiled Python dependencies
+├── ImageBind                   <-- cloned ImageBind repository
+│   ├── .checkpoints            <-- ImageBind looks for this directory when loading the model
+│   │   └── imagebind_huge.pth  <-- pre-downloaded ImageBind model
+│   └── ...
+└── scripts                     <-- mapped to the Pi's ~/Projects/Playpen/imagebind directory
+    ├── example.ipynb
+    ├── processing.ipynb
+    └── search.py
+```
 
 <br />
 
 ## Build Docker image
 
-1. Pull Ubuntu 20.20 (Focal Fossa).
+1. Pull Ubuntu 20.04 (Focal Fossa).
 
    ```bash
    # In Raspberry Pi's terminal window
    docker pull ubuntu:focal
    ```
 
-   > **Note**: ImageBind requires Python 3.8.x, hence Ubuntu 20.04 being use here, but any other OS running Python 3.8.x should work (though some of the steps below may need adjusting.)
+   > **Note**: ImageBind requires Python 3.8.x, hence Ubuntu 20.04 being used here, but any other OS running Python 3.8.x should work (though some of the steps below may need adjusting).
 
 2. Start a container and interactive Bash shell.
 
@@ -58,7 +92,7 @@ ImageBind: https://github.com/facebookresearch/ImageBind
      # Install mayavi
      apt install -y mayavi2
      
-     # Test installation
+     # Verify installation
      python3
      >>> import mayavi
      >>> print(mayavi.__version__)
@@ -103,7 +137,7 @@ ImageBind: https://github.com/facebookresearch/ImageBind
      cd ../python
      python3 setup.py install --user
      
-     # Test installation
+     # Verify installation
      python3
      >>> import decord
      >>> print(decord.__version__)
@@ -136,7 +170,7 @@ ImageBind: https://github.com/facebookresearch/ImageBind
    wget -P /app/ImageBind/.checkpoints https://dl.fbaipublicfiles.com/imagebind/imagebind_huge.pth
    ```
 
-7. Install Jupyter notebook.
+7. Install Jupyter Notebook.
 
    ```bash
    # In the Docker container's shell
@@ -144,6 +178,8 @@ ImageBind: https://github.com/facebookresearch/ImageBind
    python3 -m pip install notebook
    python3 -m jupyter notebook password # e.g. raspberry
    ```
+   
+   > **Note**: Jupyter Notebook is installed here, instead of Jupyter Lab, to minimize software footprint and potential dependency conflicts (no issues yet for ImageBind but known issues for LLaVA).
    
 8. Save the container as an image.
 
@@ -223,4 +259,21 @@ ImageBind: https://github.com/facebookresearch/ImageBind
    # In Raspberry Pi's terminal window
    sudo systemctl isolate graphical.target
    ```
-   
+
+### Run the example notebook
+
+1. Download the example notebook from https://github.com/kunika/bonbon/blob/main/ImageBind/example.ipynb.
+
+2. In Jupyter Notebook running in the Docker container, navigate to the directory `/app/scripts` and add the example notebook to the directory using Jupyter Notebook's upload button.
+
+   The `/app` directory in the Docker container/Jupyter Notebook should now look like this: 
+
+   ```bash
+   app
+   ├── .packages
+   ├── ImageBind
+   └── scripts
+       └── example.ipynb
+   ```
+
+   Note: The `.packages` directory will be hidden (not visible) in Jupyter Notebook.
