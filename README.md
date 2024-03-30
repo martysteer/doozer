@@ -113,6 +113,15 @@ Disabling, enabling and modifying Raspberry Pi's default swap on the boot microS
    sudo reboot
    ```
 
+6. Verify.
+
+   ```bash
+   free -h
+                  total        used        free      shared  buff/cache   available
+   Mem:           7.9Gi       642Mi       6.5Gi        45Mi       866Mi       7.2Gi
+   Swap:          2.0Gi          0B       2.0Gi
+   ```
+
 ### Disable swap file service
 
 1. Turn the swap off.
@@ -149,7 +158,7 @@ Disabling, enabling and modifying Raspberry Pi's default swap on the boot microS
 
 ## Docker
 
-https://docs.docker.com/engine/install/debian/
+Source: https://docs.docker.com/engine/install/debian/
 
 1. Add Docker's GPG key.
 
@@ -295,7 +304,7 @@ https://docs.docker.com/engine/install/debian/
 
 ## VSCodium
 
-https://vscodium.com/
+Source: https://vscodium.com/
 
 1. Add VSCodium's GPG key.
 
@@ -303,7 +312,7 @@ https://vscodium.com/
    wget -qO - https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg | gpg --dearmor | sudo dd of=/usr/share/keyrings/vscodium-archive-keyring.gpg
    ```
 
-2. Add Docker's repository to `apt` sources.
+2. Add VSCodium's repository to `apt` sources.
 
    ```bash
    echo 'deb [ signed-by=/usr/share/keyrings/vscodium-archive-keyring.gpg ] https://download.vscodium.com/debs vscodium main' | sudo tee /etc/apt/sources.list.d/vscodium.list
