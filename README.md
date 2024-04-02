@@ -210,7 +210,7 @@ Source: https://docs.docker.com/engine/install/debian/
 5. Verify that the installation is successful by running the example `hello-world` image.
 
    ```bash
-   sudo docker run hello-world
+   sudo docker run --rm hello-world
    ```
 
    The output will look like this:
@@ -238,22 +238,6 @@ Source: https://docs.docker.com/engine/install/debian/
     https://docs.docker.com/get-started/
    ```
 
-   Once successful installation of Docker is confirmed, remove the example container.
-
-   First, get the ID of the example container:
-
-   ```bash
-   sudo docker ps -a
-   CONTAINER ID   IMAGE         COMMAND    CREATED         STATUS                     PORTS     NAMES
-   a025fe0a6fd0   hello-world   "/hello"   1 minutes ago   Exited (0) 1 minutes ago             funny_keller
-   ```
-
-   Remove the container:
-
-   ```bash
-   sudo docker rm a025fe0a6fd0
-   ```
-
 6. Add the Raspberry Pi user to `docker` group so that Docker command can be run without `sudo`.
 
    ```bash
@@ -265,6 +249,25 @@ Source: https://docs.docker.com/engine/install/debian/
    ```bash
    newgrp docker
    ```
+
+### Manage Docker's disk usage
+
+Docker persists build cache, containers, images, and volumes to disk, and over time, these artifacts can build up and take up a lot of space on a system.
+
+|                                                       | Command                                                    |
+| ----------------------------------------------------- | ---------------------------------------------------------- |
+| View disk usage                                       | `docker system df`                                         |
+| List unused containers                                | `docker ps --filter status=exited --filter status=dead -q` |
+| Remove all stopped containers from the system         | `docker container prune`                                   |
+| Remove dangling images from the system                | `docker image prune`                                       |
+| Remove all dangling and unused images from the system | `docker image prune -a`                                    |
+| Remove anonymous volumes                              | `docker volume prune`                                      |
+| Remove all volumes                                    | `docker volume prune -a`                                   |
+| Remove build cache                                    | `docker buildx prune`                                      |
+| Remove unused networks                                | `docker network prune`                                     |
+| Remove all unused artifacts                           | `docker system prune`                                      |
+
+Use the  `-f` or `--force` option with `prune` to mute the prompts for confirmation e.g. `docker image prune -a -f`
 
 <br />
 
@@ -302,6 +305,52 @@ Source: https://docs.docker.com/engine/install/debian/
 
 <br />
 
+## Pyenv
+
+Source: https://github.com/pyenv/pyenv
+
+1. Install build dependencies.
+
+   ```bash
+   sudo apt update; sudo apt install build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev llvm
+   ```
+
+   See: https://github.com/pyenv/pyenv/wiki#suggested-build-environment
+
+2. Install Pyenv.
+
+   ```bash
+   curl https://pyenv.run | bash
+   ```
+
+3. Set up shell environment for Pyenv.
+
+   Add the following to `~./bashrc`:
+
+   ```bash
+   export PYENV_ROOT="$HOME/.pyenv"
+   command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+   eval "$(pyenv init -)"
+   ```
+
+   If there is `~/.bash_profile`, add the following to it:
+
+   ```bash
+   export PYENV_ROOT="$HOME/.pyenv"
+   [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+   eval "$(pyenv init -)"
+   ```
+
+   Otherwise, add the following to `~/.profile`:
+
+   ```bash
+   export PYENV_ROOT="$HOME/.pyenv"
+   command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+   eval "$(pyenv init -)"
+   ```
+
+<br />
+
 ## VSCodium
 
 Source: https://vscodium.com/
@@ -330,3 +379,54 @@ Source: https://vscodium.com/
    sudo apt install codium
    ```
 
+### Use remote Python kernel in VSCodium/Visual Studio Code
+
+Source: https://code.visualstudio.com/docs/datascience/jupyter-kernel-management#_existing-jupyter-server
+
+1. On your Raspberry Pi, start Jupyter Notebook or Jupyter Lab, either on the Pi or in Docker container.
+
+2. On another computer that is on the same network as your Raspberry Pi, open a new or existing notebook in VSCodium or Visual Studio Code.
+
+3. Click the **Select Kernel** button (top right hand of VSCodium/Visual Sudio Code window), and select  **Existing Jupyter Server** (the options will appear in the address bar).
+
+4. Enter the URL of your Jupyter Notebook or Jupyter Lab running on the Raspberry Pi.
+
+5. Enter the password or token for your Jupyter Notebook or Jupyter Lab.
+
+6. For **Change server display name**, accept the given name or delete it.
+
+7. Select **Python 3 (ipykernel)**.
+
+8. Verify by putting the following in a cell and running the cell.
+
+   ```bash
+   import os
+   os.listdir()
+   ```
+
+   This should output a list of directories on Raspberry Pi e.g. in Docker container:
+
+   ```bash
+   ['sbin',
+    'media',
+    'lib',
+    'opt',
+    'etc',
+    'sys',
+    'usr',
+    'home',
+    'run',
+    'tmp',
+    'boot',
+    'srv',
+    'root',
+    'dev',
+    'bin',
+    'var',
+    'proc',
+    'mnt',
+    'app',
+    '.dockerenv']
+   ```
+
+   
