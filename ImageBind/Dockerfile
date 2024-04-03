@@ -34,7 +34,7 @@ RUN python3 -m pip install .
 RUN mkdir -p .checkpoints && wget -P .checkpoints https://dl.fbaipublicfiles.com/imagebind/imagebind_huge.pth
 
 # Install Jupyter Lab
-RUN python3 -m pip install jupyterlab
+RUN python3 -m pip install jupyterlab ipywidgets
 # set Jupyter Lab password
 RUN mkdir -p /root/.jupyter && printf '{\n  "IdentityProvider": {\n    "hashed_password": "sha256:22c2e4faf76e:5774f4e58266260008480196ddf9c4de39267f6d2df7566e5dde17ba1210d7d6"\n  }\n}' >> /root/.jupyter/jupyter_server_config.json
 

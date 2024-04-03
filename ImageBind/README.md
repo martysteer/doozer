@@ -223,7 +223,7 @@ The build process involves pre-downloading the ImageBind model, which takes arou
      ```bash
      # In the Docker container's shell
      # cwd: /
-     python3 -m pip install jupyterlab
+     python3 -m pip install jupyterlab ipywidgets
      
      # Set password
      python3 -m jupyter lab password # e.g. raspberry
@@ -234,7 +234,7 @@ The build process involves pre-downloading the ImageBind model, which takes arou
      ```bash
      # In the Docker container's shell
      # cwd: /
-     python3 -m pip install notebook
+     python3 -m pip install notebook ipywidgets
      
      # Set password
      python3 -m jupyter notebook password # e.g. raspberry
@@ -374,6 +374,6 @@ This is most likely caused by the allocated compute resources running out. Try o
 - [Resize the swap](../README.md#swap) on your Raspberry Pi. The swap size should be minimum 2GB.
 - [Turn off GUI](../README.md#graphical-user-interface-gui) on your Raspberry Pi.
 - Pre-download the ImageBind model.
+- Restart Python kernel.
 - Restart the Docker container.
 - Reboot your Raspberry Pi.
-
