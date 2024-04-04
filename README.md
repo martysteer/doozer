@@ -325,7 +325,7 @@ Source: https://github.com/pyenv/pyenv
 
 3. Set up shell environment for Pyenv.
 
-   Add the following to `~./bashrc`:
+   Add the following to `~/.bashrc`:
 
    ```bash
    export PYENV_ROOT="$HOME/.pyenv"
@@ -348,6 +348,14 @@ Source: https://github.com/pyenv/pyenv
    command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
    eval "$(pyenv init -)"
    ```
+
+4. Reload ~/.bashrc settings.
+
+   ```bash
+   source ~/.bashrc
+   ```
+
+   
 
 <br />
 
