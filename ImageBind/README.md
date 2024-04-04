@@ -530,3 +530,39 @@ This is most likely caused by the allocated compute resources running out. Try o
 - Restart Python kernel.
 - Restart the Docker container.
 - Reboot your Raspberry Pi.
+
+### Running `import torch` in Jupyter notebook raises 'OSError: /lib/aarch64-linux-gnu/libgomp.so.1: cannot allocate memory in static TLS block'.
+
+No idea what this is or what could be the cause, but doing either or both of the following seem to make the error go away for now. To investigate at some point...?
+
+* Change the order of imports, and import PyTorch before any other modules.
+
+* Run the command:
+
+  ```bash
+  # In the Docker container's shell
+  export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1
+  ```
+
+  If the error occurs frequently, add the following to your Jupyter Lab/Notebook configuration file `~/.jupyter/jupyter_lab_config.py` or  `~/.jupyter/jupyter_notebook_config.py` as appropriate: 
+
+  ```bash
+  import os
+  c = get_config()
+  os.environ['LD_PRELOAD'] = '/usr/lib/aarch64-linux-gnu/libgomp.so.1'
+  c.Spawner.env.update('LD_PRELOAD')
+  ```
+
+  If the configuration file does not exist, generate it by running one of the command as appropriate:
+
+  ```bash
+  # In the Docker container's shell
+  
+  # If you have Jupyter Lab installed
+  jupyter lab --generate-config
+  
+  # If you have Jupyter Notebook installed
+  jupyter notebook --generate-config
+  ```
+
+* If neither of the above did the trick, restart the kernel, Docker container and/or the Pi.
