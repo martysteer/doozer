@@ -1,6 +1,6 @@
 # :dog2: bonbon x​ ​ImageBind
 
-ImageBind: https://github.com/facebookresearch/ImageBind
+ImageBind: https://imagebind.metademolab.com | https://arxiv.org/abs/2305.05665
 
 <br />
 
@@ -101,12 +101,13 @@ The build process involves pre-downloading the ImageBind model, which takes arou
    >
    > See: https://docs.docker.com/reference/cli/docker/container/run/
 
-3. Create `/app` directory.
+3. Set up directory structure.
 
    ```bash
    # In the Docker container's shell
    # cwd: /
    mkdir /app
+   mkdir /app/.packages
    ```
 
 4. Install pre-requisite packages for installation of ImageBind.
@@ -122,7 +123,7 @@ The build process involves pre-downloading the ImageBind model, which takes arou
 
 5. Install ImageBind's problematic dependencies manually.
 
-   * [mayavi](https://github.com/enthought/mayavi)
+   * [Mayavi](https://github.com/enthought/mayavi)
 
      ```bash
      # In the Docker container's shell
@@ -144,7 +145,17 @@ The build process involves pre-downloading the ImageBind model, which takes arou
      >>> exit()
      ```
 
-   * [decord](https://github.com/dmlc/decord) (instead of `eva-decord`)
+   * [GEOS](https://libgeos.org/)
+
+     ```bash
+     # In the Docker container's shell
+     # cwd: /
+     
+     # Install the required packages for cartopy
+     apt install -y libgeos-dev
+     ```
+     
+   * [Decord](https://github.com/dmlc/decord) (instead of [Eva Decord](https://github.com/georgia-tech-db/eva-decord))
 
      ```bash
      # In the Docker container's shell
@@ -158,9 +169,6 @@ The build process involves pre-downloading the ImageBind model, which takes arou
      
      # Check cmake version. make sure it is verion 3.8 or later
      cmake -version
-     
-     # Create a new folder in the home directory
-     mkdir /app/.packages
      
      # Clone the decord repository
      git -C /app/.packages clone --recursive https://github.com/dmlc/decord
@@ -184,18 +192,8 @@ The build process involves pre-downloading the ImageBind model, which takes arou
      >>>
      >>> exit()
      ```
-     
-   * [geos](https://libgeos.org/)
 
-     ```bash
-     # In the Docker container's shell
-     # cwd: /
-     
-     # Install the required packages for cartopy
-     apt install -y libgeos-dev
-     ```
-
-6. Install ImageBind.
+6. Install [ImageBind](https://github.com/facebookresearch/ImageBind).
 
    ```bash
    # In the Docker container's shell
@@ -216,7 +214,7 @@ The build process involves pre-downloading the ImageBind model, which takes arou
    wget -P /app/ImageBind/.checkpoints https://dl.fbaipublicfiles.com/imagebind/imagebind_huge.pth
    ```
 
-7. Install Jupyter Lab or Jupyter Notebook.
+7. Install [Jupyter Lab/Notebook](https://jupyter.org/).
 
    - Jupyter Lab
 
@@ -242,23 +240,25 @@ The build process involves pre-downloading the ImageBind model, which takes arou
 
 8. Save the container as an image.
 
-   1. Get the ID of the running container:
+   1. Open a new terminal window.
+
+   2. Get the ID of the running container:
 
       ```bash
       # In Raspberry Pi's terminal window
       docker ps -a
       CONTAINER ID   IMAGE          COMMAND   CREATED          STATUS          PORTS   NAMES
-      3480abe0e7d3   ubuntu:focal   "bash"    20 minutes ago   Up 20 minutes           flamboyant_tu
+      3480abe0e7d3   ubuntu:20.04   "bash"    20 minutes ago   Up 20 minutes           flamboyant_tu
       ```
-      
-   2. Create a new image:
+
+   3. Create a new image:
 
       ```bash
       # In Raspberry Pi's terminal window
       docker commit 3480abe0e7d3 imagebind
       ```
-      
-   3. Verify:
+
+   4. Verify:
 
       ```bash
       # In Raspberry Pi's terminal window
@@ -268,6 +268,13 @@ The build process involves pre-downloading the ImageBind model, which takes arou
       ubuntu        focal     3048ba078595   5 weeks ago      65.7MB
       hello-world   latest    ee301c921b8a   11 months ago    9.14kB
       ```
+
+9. Return to the terminal window with the Docker container running, exit the container.
+
+   ```bash
+   # In the Docker container's shell
+   exit
+   ```
 
 <br />
 
@@ -319,7 +326,7 @@ The build process involves pre-downloading the ImageBind model, which takes arou
      >
      > See: https://docs.docker.com/reference/cli/docker/container/run/
 
-3. Jupyter Lab or Jupyter Notebook should now be available at the following URLs and accessible from another computer that is connected to the same network as your Raspberry Pi:
+3. Jupyter Lab/Notebook should now be available at the following URLs and accessible from another computer that is connected to the same network as your Raspberry Pi:
 
    - http://<raspberry_pi_ip_address>:8888 e.g. http://192.168.1.173:8888
    - http://<raspberry_pi_hostname>:8888 e.g. http://bonbon.local:8888
@@ -349,9 +356,9 @@ The build process involves pre-downloading the ImageBind model, which takes arou
 
 1. Download the example notebook from https://github.com/kunika/bonbon/blob/main/ImageBind/example.ipynb.
 
-2. In Jupyter Notebook running in the Docker container, navigate to the directory `/app/scripts` and add the example notebook to the directory using Jupyter Notebook's upload button.
+2. In Jupyter Lab/Notebook running in the Docker container, navigate to the directory `/app/scripts` and add the example notebook to the directory using Jupyter Lab/Notebook's upload button.
 
-   The `/app` directory in the Docker container/Jupyter Notebook should now look like this: 
+   The `/app` directory in the Docker container (or Jupyter Lab/Notebook's file tree) should now look like this: 
 
    ```bash
    app
@@ -361,13 +368,159 @@ The build process involves pre-downloading the ImageBind model, which takes arou
        └── example.ipynb
    ```
 
-   Note: The `.packages` directory will be hidden (not visible) in Jupyter Notebook.
+   Note: The `.packages` directory will be hidden (not visible) in Jupyter Lab/Notebook.
+
+<br />
+
+## ChromaDB
+
+ChromaDB: https://www.trychroma.com
+
+### Install with Dockerfile
+
+1. Add the following to the ImageBind Dockerfile, uncomment the commented block after the installation of Jupyter Lab so that it looks like this:
+
+   ```bash
+   # Pre-install pesky ChromaDB dependencies
+   # SQLite
+   # ChromaDB requires SQLite > 3.35 and the version available to Ubuntu 20.04 is 3.31.x,
+   # so building a newer version from source instead.
+   RUN apt install -y libreadline-dev
+   RUN wget -P /app/.packages https://www.sqlite.org/2024/sqlite-autoconf-3450200.tar.gz
+   RUN tar xzf /app/.packages/sqlite-autoconf-3450200.tar.gz -C /app/.packages/
+   WORKDIR /app/.packages/sqlite-autoconf-3450200
+   RUN ./configure && make
+   RUN apt purge sqlite3
+   RUN make install
+   RUN echo 'export LD_LIBRARY_PATH=/usr/local/lib' >> ~/.bashrc
+   ENV LD_LIBRARY_PATH="/usr/local/lib"
+   # gRPC
+   WORKDIR /
+   RUN python3 -m pip install grpcio
+   
+   # Install ChromaDB
+   RUN python3 -m pip install chromadb
+   ```
+
+2. In the directory where the ImageBind Dockerfile is located, build a new Docker image. Don't forget the dot at the end of the command!
+
+   ```bash
+   # In Raspberry Pi's terminal window
+   docker build -t imagebind-chromadb:latest .
+   ```
+
+### Install manually
+
+1. Start ImageBind Docker container.
+
+   ```bash
+   # In Raspberry Pi's terminal window
+   docker run --rm -it --entrypoint bash imagebind:latest
+   ```
+
+2. Install ChromaDB's problematic dependencies manually.
+
+   - [SQLite](https://www.sqlite.org/)
+
+     ChromaDB requires SQLite > 3.35 and the version available to Ubuntu 20.04 is 3.31.x, so building a newer version from source instead:
+
+     ```bash
+     # In the Docker container's shell
+     # cwd: /
+     
+     # Install dependencies
+     sudo apt install -y libreadline-dev
+     
+     # Download the source
+     wget -P /app/.packages https://www.sqlite.org/2024/sqlite-autoconf-3450200.tar.gz
+     
+     # Extract the tarball
+     tar xzf /app/.packages/sqlite-autoconf-3450200.tar.gz -C /app/.packages/
+     
+     # configure and make
+     cd /app/.packages/sqlite-autoconf-3450200
+     ./configure && make
+     
+     # Make sure there is no apt managed SQLite installed on the system
+     sudo apt purge sqlite3
+     
+     # Make install
+     make install
+     
+     # Add to path
+     echo 'export LD_LIBRARY_PATH=/usr/local/lib' >> ~/.bashrc
+     ```
+
+   - [gRPC](https://grpc.io/)
+
+     ```bash
+     # In the Docker container's shell
+     # cwd: /
+     
+     # Update pip to the latest version
+     python3 -m pip install --upgrade pip
+     
+     # Install gRPC
+     python3 -m pip install grpcio
+     ```
+
+3. Install ChromaDB
+
+   ```bash
+   # In the Docker container's shell
+   # cwd: /
+   python3 -m pip install chromadb
+   ```
+
+4. Save the container as an image.
+
+   1. Open a new terminal window.
+
+   2. Get the ID of the running container:
+
+      ```bash
+      # In Raspberry Pi's terminal window
+      docker ps -a
+      CONTAINER ID   IMAGE       COMMAND   CREATED          STATUS          PORTS   NAMES
+      760fcc5da7ae   imagebind   "bash"    10 minutes ago   Up 10 minutes           loving_driscoll
+      ```
+
+   3. Create a new image:
+
+      ```bash
+      # In Raspberry Pi's terminal window
+      docker commit 760fcc5da7ae imagebind-chromadb
+      ```
+
+5. Return to the terminal window with the Docker container running, exit the container.
+
+   ```bash
+   # In the Docker container's shell
+   exit
+   ```
+
+### Start the Docker container
+
+- If the Docker image was built with Dockerfile:
+
+  ```bash
+  # In Raspberry Pi's terminal window
+  docker run --rm -p 8888:8888 -v ~/Projects/playpen/imagebind:/app/scripts imagebind-chromadb:latest
+  ```
+
+- If the Docker image was built manually:
+
+  ```bash
+  # In Raspberry Pi's terminal window
+  docker run --rm -p 8888:8888 -v ~/Projects/playpen/imagebind:/app/scripts -it --entrypoint bash imagebind-chromadb:latest -c "jupyter lab --ip=0.0.0.0 --port=8888 --allow-root --no-browser"
+  ```
+
 
 <br />
 
 ## Troubleshooting
 
-### Python kernel keeps dying when loading ImageBind model in Jupyter notebook.
+### Python kernel keeps dying/restarting when loading ImageBind model in Jupyter notebook.
 
 This is most likely caused by the allocated compute resources running out. Try one or more of the following:
 
