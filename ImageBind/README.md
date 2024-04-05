@@ -20,7 +20,7 @@ ImageBind: https://imagebind.metademolab.com | https://arxiv.org/abs/2305.05665
 ├── ...
 ├── Projects
 │   └── playpen
-│       └── imagebind            <-- mapped to Docker containers's /app/scripts directory
+│       └── imagebind            <-- mapped to Docker container's /app/scripts directory
 │           ├── example.ipynb
 │           ├── processing.ipynb
 │           └── search.py
@@ -566,3 +566,7 @@ No idea what this is or what could be the cause, but doing either or both of the
   ```
 
 * If neither of the above did the trick, restart the kernel, Docker container and/or the Pi.
+
+### All other issues
+
+![unexpected_reboot](../.assets/images/unexpected_reboot.jpg)
