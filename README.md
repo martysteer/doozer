@@ -254,20 +254,24 @@ Source: https://docs.docker.com/engine/install/debian/
 
 Docker persists build cache, containers, images, and volumes to disk, and over time, these artifacts can build up and take up a lot of space on a system.
 
-|                                                       | Command                                                    |
-| ----------------------------------------------------- | ---------------------------------------------------------- |
-| View disk usage                                       | `docker system df`                                         |
-| List unused containers                                | `docker ps --filter status=exited --filter status=dead -q` |
-| Remove all stopped containers from the system         | `docker container prune`                                   |
-| Remove dangling images from the system                | `docker image prune`                                       |
-| Remove all dangling and unused images from the system | `docker image prune -a`                                    |
-| Remove anonymous volumes                              | `docker volume prune`                                      |
-| Remove all volumes                                    | `docker volume prune -a`                                   |
-| Remove build cache                                    | `docker buildx prune`                                      |
-| Remove unused networks                                | `docker network prune`                                     |
-| Remove all unused artifacts                           | `docker system prune`                                      |
+| Task                                                         | Command                                                    |
+| ------------------------------------------------------------ | ---------------------------------------------------------- |
+| View disk usage.                                             | `docker system df`                                         |
+| List unused containers.                                      | `docker ps --filter status=exited --filter status=dead -q` |
+| Remove all stopped containers.                               | `docker container prune`                                   |
+| Remove dangling images.                                      | `docker image prune`                                       |
+| Remove anonymous volumes.                                    | `docker volume prune`                                      |
+| Remove build cache.                                          | `docker buildx prune`                                      |
+| Remove unused networks.                                      | `docker network prune`                                     |
+| Remove all unused containers, networks, images (dangling) and build cache (unused). | `docker system prune`                                      |
+| :warning: ​​Remove all dangling and unused images.             | `docker image prune -a`                                    |
+| :warning: ​Remove all anonymous and unused volumes.           | `docker volume prune -a`                                   |
+| :warning: ​Remove all unused containers, networks, and images (both dangling and unused), and build cache (unused). | `docker system prune -a`                                   |
+| :warning: ​Remove all unused containers, networks, images (both dangling and unused), volumes (anonymous and unused) and build cache (all). | `docker system prune -a --volumes`                         |
 
-Use the  `-f` or `--force` option with `prune` to mute the prompts for confirmation e.g. `docker image prune -a -f`
+Use the  `-f` or `--force` option with `prune` to mute the prompts for confirmation e.g. `docker image prune -f`
+
+See: https://docs.docker.com/reference/cli/docker/
 
 <br />
 

@@ -20,7 +20,7 @@ ImageBind: https://imagebind.metademolab.com | https://arxiv.org/abs/2305.05665
 ├── ...
 ├── Projects
 │   └── playpen
-│       └── imagebind            <-- mapped to Docker image/containers's /app/scripts directory
+│       └── imagebind            <-- mapped to Docker containers's /app/scripts directory
 │           ├── example.ipynb
 │           ├── processing.ipynb
 │           └── search.py
@@ -36,7 +36,7 @@ app
 │   ├── .checkpoints            <-- ImageBind looks for this directory when loading the model
 │   │   └── imagebind_huge.pth  <-- pre-downloaded ImageBind model
 │   └── ...
-└── scripts                     <-- mapped to the Pi's ~/Projects/Playpen/imagebind directory
+└── scripts                     <-- mapped to the Pi's ~/Projects/playpen/imagebind directory
     ├── example.ipynb
     ├── processing.ipynb
     └── search.py
