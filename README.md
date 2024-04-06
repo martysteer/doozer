@@ -6,13 +6,15 @@
 
 * [Raspberry Pi 5](https://www.raspberrypi.com/products/raspberry-pi-5/), 8GB
 * [PSU for Raspberry Pi 5](https://www.raspberrypi.com/products/27w-power-supply/) (27W)
-* [Raspberry Pi Active Cooler](https://www.raspberrypi.com/products/active-cooler/)
+* [Raspberry Pi Active Cooler](https://www.raspberrypi.com/products/active-cooler/)*
 * [Pimoroni NVMe Base](https://shop.pimoroni.com/products/nvme-base?variant=41219587178579)
 * [PCIe Pipe 50mm](https://shop.pimoroni.com/products/pcie-flex-cable-for-nvme-base-and-raspberry-pi-5?variant=41449370943571)
 * [Crucial P3 Plus 1TB PCIe 3 NVMe SSD](https://uk.crucial.com/products/ssd/crucial-p3-plus-ssd)
 * [Pimoroni Pibow case](https://shop.pimoroni.com/products/pibow-5?variant=41045302575187)
 * Display ([Pi-Top FHD Touch](https://www.pi-top.com/start/touch-display))
 * Keyboard ([Logitech K400](https://www.logitech.com/en-gb/products/keyboards/k400-plus-touchpad-keyboard.html))
+
+\* [Argon THRML 60mm Radiator Cooler](https://thepihut.com/products/argon-thrml-60mm-radiator-cooler-for-raspberry-pi-5) may possibly be better cooling solution than the official Active Cooler if using the Pi to generate image/video/audio embeddings.
 
 <br />
 
