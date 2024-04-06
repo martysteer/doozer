@@ -520,37 +520,66 @@ ChromaDB: https://www.trychroma.com
 
 ## Troubleshooting
 
-### Python kernel keeps dying/restarting when loading ImageBind model in Jupyter notebook.
+### IPython kernel keeps dying/restarting when loading ImageBind model in Jupyter notebook.
 
 This is most likely caused by the allocated compute resources running out. Try one or more of the following:
 
 - [Resize the swap](../README.md#swap) on your Raspberry Pi. The swap size should be minimum 2GB.
 - [Turn off GUI](../README.md#graphical-user-interface-gui) on your Raspberry Pi.
 - Pre-download the ImageBind model.
-- Restart Python kernel.
+- Restart IPython kernel.
+- Restart Jupyter Lab/Notebook.
 - Restart the Docker container.
 - Reboot your Raspberry Pi.
 
 ### Running `import torch` in Jupyter notebook raises 'OSError: /lib/aarch64-linux-gnu/libgomp.so.1: cannot allocate memory in static TLS block'.
 
-No idea what this is or what could be the cause, but doing either or both of the following seem to make the error go away for now. To investigate at some point...?
+No idea what this is or what could be the cause, but one or more of the following seem to make the error go away for now. To investigate at some point...?
 
-* Change the order of imports, and import PyTorch before any other modules.
-
-* Run the command:
+* Change the order of imports, and import PyTorch before any other modules e.g.
 
   ```bash
-  # In the Docker container's shell
-  export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1
+  import torch
+  from imagebind import data as imagebind_data
+  from imagebind.models import imagebind_model
+  from imagebind.models.imagebind_model import ModalityType
   ```
+
+* Restart IPython kernel.
+
+* Restart Jupyter Lab/Notebook.
+
+* Preload `libgomp.so.1`.
+
+  1. Stop the Docker container, if running.
+
+  2. Confirm `libgomp.so.1` exists in the Docker container:
+
+     ```bash
+     # In Raspberry Pi's terminal window
+     docker run --rm -it --entrypoint bash imagebind:latest -c "find / -iname libgomp.so.1"
+     # Expected output: /usr/lib/aarch64-linux-gnu/libgomp.so.1
+     ```
+
+  3. Make sure `libgomp.so.1` loads before Jupyter Lab/Notebook starts by adding its path to `LD_PRELOAD` Environment Variable:
+
+     ```bash
+     # In Raspberry Pi's terminal window
+     
+     # If the Docker image was built with Dockerfile
+     docker run --rm -p 8888:8888 -v ~/Projects/playpen/imagebind:/app/scripts -e LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1 imagebind:latest
+     
+     # If the Docker image was built manually
+     docker run --rm -p 8888:8888 -v ~/Projects/playpen/imagebind:/app/scripts -it --entrypoint bash imagebind:latest -c "LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1 jupyter lab --ip=0.0.0.0 --port=8888 --allow-root --no-browser"
+     ```
 
   If the error occurs frequently, add the following to your Jupyter Lab/Notebook configuration file `~/.jupyter/jupyter_lab_config.py` or  `~/.jupyter/jupyter_notebook_config.py` as appropriate: 
 
   ```bash
   import os
-  c = get_config()
+  config = get_config()
   os.environ['LD_PRELOAD'] = '/usr/lib/aarch64-linux-gnu/libgomp.so.1'
-  c.Spawner.env.update('LD_PRELOAD')
+  config.Spawner.env.update('LD_PRELOAD')
   ```
 
   If the configuration file does not exist, generate it by running one of the command as appropriate:
@@ -565,7 +594,9 @@ No idea what this is or what could be the cause, but doing either or both of the
   jupyter notebook --generate-config
   ```
 
-* If neither of the above did the trick, restart the kernel, Docker container and/or the Pi.
+* Restart the Docker container.
+
+* Reboot your Raspberry Pi.
 
 ### All other issues
 
