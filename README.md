@@ -33,131 +33,6 @@
 
 <br />
 
-## Swap
-
-Disabling, enabling and modifying Raspberry Pi's default swap on the boot microSD Card or SSD.
-
-### Enable swap file service
-
-1. Check if the swapfile service is enabled.
-
-   ```bash
-   systemctl is-enabled dphys-swapfile
-   ```
-
-   If the output is `disabled`, enable it with the command:
-
-   ```bash
-   sudo systemctl enable dphys-swapfile
-   ```
-
-2. Check if the swapfile service is active/running.
-
-   ```bash
-   systemctl is-active dphys-swapfile
-   ```
-
-   If the output is `inactive`, start it with the command:
-
-   ```bash
-   sudo systemctl start dphys-swapfile
-   ```
-
-### Increase/decrease swap size
-
-1. Turn the swap off.
-
-   ```bash
-   sudo dphys-swapfile swapoff
-   ```
-
-2. Open and edit the configuration file.
-
-   ```bash
-   sudo nano /etc/dphys-swapfile
-   ```
-
-   Search for the following line in the file (e.g. use the **Ctrl**+**W** shortcut to search in-file) and edit the swap size. The size must given in megabytes, and the specified size must be available on the boot microSD card/SSD.
-
-   ```bash
-   CONF_SWAPSIZE=100
-   ```
-
-   e.g. increase the swapsize to 1GB:
-
-   ```bash
-   CONF_SWAPSIZE=1024
-   ```
-
-   e.g. increase the swapsize to 2GB:
-
-   ```bash
-   CONF_SWAPSIZE=2048
-   ```
-
-3. Reinitialize the swap file.
-
-   ```bash
-   sudo dphys-swapfile setup
-   ```
-
-   The command will delete the original/previous swap file and recreate it with the new size.
-
-4. Turn the swap on.
-
-   ```bash
-   sudo dphys-swapfile swapon
-   ```
-
-5. Reboot.
-
-   ```bash
-   sudo reboot
-   ```
-
-6. Verify.
-
-   ```bash
-   free -h
-                  total        used        free      shared  buff/cache   available
-   Mem:           7.9Gi       642Mi       6.5Gi        45Mi       866Mi       7.2Gi
-   Swap:          2.0Gi          0B       2.0Gi
-   ```
-
-### Disable swap file service
-
-1. Turn the swap off.
-
-   ```bash
-   sudo dphys-swapfile swapoff
-   ```
-
-2. Uninstall the swap file.
-
-   ```bash
-   sudo dphys-swapfile uninstall
-   ```
-
-3. Stop the swap file service.
-
-   ```bash
-   sudo systemctl stop dphys-swapfile
-   ```
-
-4. Disable the swap file service.
-
-   ```bash
-   sudo systemctl disable dphys-swapfile
-   ```
-
-5. Reboot.
-
-   ```bash
-   sudo reboot
-   ```
-
-<br />
-
 ## Docker
 
 Source: https://docs.docker.com/engine/install/debian/
@@ -277,9 +152,72 @@ See: https://docs.docker.com/reference/cli/docker/
 
 <br />
 
-## Graphical User Interface (GUI)
+## Samba
 
-### Disable/enable GUI temporarily
+Source: https://www.jeffgeerling.com/blog/2021/htgwa-create-samba-smb-share-on-raspberry-pi
+
+1. Install Samba.
+
+   ```bash
+   sudo apt install samba samba-common-bin
+   ```
+
+2. Create the directory to share.
+
+   ```bash
+   mkdir /home/pi/Projects
+   ```
+
+3. Configure samba share.
+
+   ```bash
+   sudo nano /etc/samba/smb.conf
+   ```
+
+   At the bottom of the file, add the following lines:
+
+   ```bash
+   [pi-share]
+   path=/home/pi/Projects
+   writable=yes
+   create mask=0775
+   directory mask=0775
+   public=no
+   ```
+
+4. Restart Samba.
+
+   ```bash
+   sudo systemctl restart smbd
+   ```
+
+5. Create a user and password for Samba access.
+
+   ```bash
+   sudo smbpasswd -a pi # e.g. raspberry
+   ```
+
+6. Connect to the share.
+
+   Find the IP address or host name of your Raspberry Pi.
+
+   ```bash
+   hostname -I
+   # Output: 192.168.1.173 172.17.0.1
+   
+   hostname
+   # Output: bonbon
+   ```
+
+   Use the first IP address i.e. `192.168.1.173` to connect to the samba share.
+
+<br />
+
+## RAM Optimisation
+
+### Disabling the Dektop GUI
+
+#### Disable/enable GUI temporarily
 
 * To disable, press the **Ctrl**+**Alt**+**F1** keys to enter console mode, and then run the command:
 
@@ -293,7 +231,7 @@ See: https://docs.docker.com/reference/cli/docker/
   sudo systemctl isolate graphical.target
   ```
 
-### Disable/enable GUI by default
+#### Disable/enable GUI by default
 
 * To disable, press the **Ctrl**+**Alt**+**F1** keys to enter console mode, and then run the commands:
 
@@ -308,6 +246,129 @@ See: https://docs.docker.com/reference/cli/docker/
   sudo systemctl set-default graphical.target
   sudo reboot
   ```
+
+### Mounting swap
+
+Disabling, enabling and modifying Raspberry Pi's default swap on the boot microSD Card or SSD.
+
+#### Enable swap file service
+
+1. Check if the swapfile service is enabled.
+
+   ```bash
+   systemctl is-enabled dphys-swapfile
+   ```
+
+   If the output is `disabled`, enable it with the command:
+
+   ```bash
+   sudo systemctl enable dphys-swapfile
+   ```
+
+2. Check if the swapfile service is active/running.
+
+   ```bash
+   systemctl is-active dphys-swapfile
+   ```
+
+   If the output is `inactive`, start it with the command:
+
+   ```bash
+   sudo systemctl start dphys-swapfile
+   ```
+
+#### Increase/decrease swap size
+
+1. Turn the swap off.
+
+   ```bash
+   sudo dphys-swapfile swapoff
+   ```
+
+2. Open and edit the configuration file.
+
+   ```bash
+   sudo nano /etc/dphys-swapfile
+   ```
+
+   Search for the following line in the file (e.g. use the **Ctrl**+**W** shortcut to search in-file) and edit the swap size. The size must given in megabytes, and the specified size must be available on the boot microSD card/SSD.
+
+   ```bash
+   CONF_SWAPSIZE=100
+   ```
+
+   e.g. increase the swapsize to 1GB:
+
+   ```bash
+   CONF_SWAPSIZE=1024
+   ```
+
+   e.g. increase the swapsize to 2GB:
+
+   ```bash
+   CONF_SWAPSIZE=2048
+   ```
+
+3. Reinitialize the swap file.
+
+   ```bash
+   sudo dphys-swapfile setup
+   ```
+
+   The command will delete the original/previous swap file and recreate it with the new size.
+
+4. Turn the swap on.
+
+   ```bash
+   sudo dphys-swapfile swapon
+   ```
+
+5. Reboot.
+
+   ```bash
+   sudo reboot
+   ```
+
+6. Verify.
+
+   ```bash
+   free -h
+                  total        used        free      shared  buff/cache   available
+   Mem:           7.9Gi       642Mi       6.5Gi        45Mi       866Mi       7.2Gi
+   Swap:          2.0Gi          0B       2.0Gi
+   ```
+
+#### Disable swap file service
+
+1. Turn the swap off.
+
+   ```bash
+   sudo dphys-swapfile swapoff
+   ```
+
+2. Uninstall the swap file.
+
+   ```bash
+   sudo dphys-swapfile uninstall
+   ```
+
+3. Stop the swap file service.
+
+   ```bash
+   sudo systemctl stop dphys-swapfile
+   ```
+
+4. Disable the swap file service.
+
+   ```bash
+   sudo systemctl disable dphys-swapfile
+   ```
+
+5. Reboot.
+
+   ```bash
+   sudo reboot
+   ```
 
 <br />
 
@@ -361,7 +422,6 @@ Source: https://github.com/pyenv/pyenv
    source ~/.bashrc
    ```
 
-   
 
 <br />
 
