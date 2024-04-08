@@ -87,19 +87,18 @@ The build process involves pre-downloading the ImageBind model, which takes arou
 
    ```bash
    # In Raspberry Pi's terminal window
-   docker run --rm -it --entrypoint bash ubuntu:20.04
+   docker run -it --entrypoint bash ubuntu:20.04
    ```
 
    > **Options**:
    >
-   > - `--rm`: Automatically remove the container when it exits.
    > - `-i` or `--interactive`: Keep STDIN open even if not attached.
    > - `-t` or `--tty`: Allocate a pseudo-TTY. 
    > - `--entrypoint`: Overwrite the default ENTRYPOINT of the image.
-   >
-   > <br />
-   >
-   > See: https://docs.docker.com/reference/cli/docker/container/run/
+   > 
+   ><br />
+   > 
+   >See: https://docs.docker.com/reference/cli/docker/container/run/
 
 3. Set up directory structure.
 
@@ -238,11 +237,16 @@ The build process involves pre-downloading the ImageBind model, which takes arou
      python3 -m jupyter notebook password # e.g. raspberry
      ```
 
-8. Save the container as an image.
+8. Exit the container.
 
-   1. Open a new terminal window.
+   ```bash
+   # In the Docker container's shell
+   exit
+   ```
 
-   2. Get the ID of the running container:
+9. Save the container as an image.
+
+   1. Get the ID of the container:
 
       ```bash
       # In Raspberry Pi's terminal window
@@ -251,14 +255,14 @@ The build process involves pre-downloading the ImageBind model, which takes arou
       3480abe0e7d3   ubuntu:20.04   "bash"    20 minutes ago   Up 20 minutes           flamboyant_tu
       ```
 
-   3. Create a new image:
+   2. Create a new image:
 
       ```bash
       # In Raspberry Pi's terminal window
       docker commit 3480abe0e7d3 imagebind
       ```
 
-   4. Verify:
+   3. Verify:
 
       ```bash
       # In Raspberry Pi's terminal window
@@ -269,12 +273,11 @@ The build process involves pre-downloading the ImageBind model, which takes arou
       hello-world   latest    ee301c921b8a   11 months ago    9.14kB
       ```
 
-9. Return to the terminal window with the Docker container running, exit the container.
+   4. Remove the container (optional).
 
-   ```bash
-   # In the Docker container's shell
-   exit
-   ```
+      ```bash
+      docker container rm 3480abe0e7d3
+      ```
 
 <br />
 
@@ -415,7 +418,7 @@ ChromaDB: https://www.trychroma.com
 
    ```bash
    # In Raspberry Pi's terminal window
-   docker run --rm -it --entrypoint bash imagebind:latest
+   docker run -it --entrypoint bash imagebind:latest
    ```
 
 2. Install ChromaDB's problematic dependencies manually.
@@ -472,11 +475,16 @@ ChromaDB: https://www.trychroma.com
    python3 -m pip install chromadb
    ```
 
-4. Save the container as an image.
+4. Exit the container.
 
-   1. Open a new terminal window.
+   ```bash
+   # In the Docker container's shell
+   exit
+   ```
 
-   2. Get the ID of the running container:
+5. Save the container as an image.
+
+   1. Get the ID of the container:
 
       ```bash
       # In Raspberry Pi's terminal window
@@ -491,13 +499,12 @@ ChromaDB: https://www.trychroma.com
       # In Raspberry Pi's terminal window
       docker commit 760fcc5da7ae imagebind-chromadb
       ```
+      
+   3. Remove the container (optional).
 
-5. Return to the terminal window with the Docker container running, exit the container.
-
-   ```bash
-   # In the Docker container's shell
-   exit
-   ```
+      ```bash
+      docker container rm 760fcc5da7ae
+      ```
 
 ### Start the Docker container
 
