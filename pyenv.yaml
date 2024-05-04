@@ -1,0 +1,55 @@
+# Pyenv
+# Installing pyenv
+---
+- hosts: doozer
+  vars:
+    target_user: pi
+    ignore_python_version: false 
+    ignore_architecture: false
+
+  tasks:
+    - name: Install pyenv build dependencies
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      become: true
+      with_items:
+        - build-essential
+        - libssl-dev
+        - zlib1g-dev
+        - libbz2-dev
+        - libreadline-dev
+        - libsqlite3-dev
+        - curl
+        - libncursesw5-dev
+        - xz-utils
+        - tk-dev
+        - libxml2-dev
+        - libxmlsec1-dev
+        - libffi-dev
+        - liblzma-dev
+        - llvm
+
+    - name: Basic usage
+      ansible.builtin.debug:
+        msg: "'{{ lookup('ansible.builtin.env', 'PYENV_ROOT') }}' is the PYENV_ROOT environment variable."
+      when: "lookup('ansible.builtin.env', 'PYENV_ROOT') is defined"
+
+    - name: Install pyenv
+      ansible.builtin.shell:
+        cmd: curl https://pyenv.run | bash
+      args:
+        creates: ~/.pyenv
+
+    - name: Setup pyenv environment in .bashrc file
+      ansible.builtin.blockinfile:
+        path: ~/.bashrc
+        block: |
+          export PYENV_ROOT="$HOME/.pyenv"
+          export PATH="$PYENV_ROOT/bin:$PATH"
+          eval "$(pyenv init -)"
+          eval "$(pyenv virtualenv-init -)"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - pyenv setup"
+        create: yes
+
+
