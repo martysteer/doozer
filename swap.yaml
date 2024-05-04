@@ -1,0 +1,37 @@
+# Mounting swap
+# Disabling, enabling and modifying Raspberry Pi's default swap on the boot microSD Card or SSD.
+# $ ansible-playbook swap.yml -vv
+---
+- hosts: doozer
+  vars:
+    target_user: pi
+    ignore_python_version: false 
+    ignore_architecture: false
+    swapsize: "2048"
+
+  tasks:
+    - name: "Open and edit the configuration file. Increase the swapsize to {{ vars.swapsize }}."
+      ansible.builtin.lineinfile:
+        path: /etc/dphys-swapfile
+        regexp: '^CONF_SWAPSIZE='
+        line: "CONF_SWAPSIZE={{ vars.swapsize }}"
+      become: true
+      register: conf_swapsize
+
+    - name: Turn the swap off.
+      ansible.builtin.shell:
+        cmd: dphys-swapfile swapoff
+      become: true
+      when: conf_swapsize.changed
+
+    - name: Reinitialize the swap file.
+      ansible.builtin.shell:
+        cmd: dphys-swapfile setup
+      become: true
+      when: conf_swapsize.changed
+
+    - name: Turn the swap on.
+      ansible.builtin.shell:
+        cmd: dphys-swapfile swapon
+      become: true
+      when: conf_swapsize.changed
