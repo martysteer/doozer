@@ -1,0 +1,60 @@
+# Samba
+# Installing and configging samba
+# Source: https://www.jeffgeerling.com/blog/2021/htgwa-create-samba-smb-share-on-raspberry-pi
+# NB: Samba password is sent unencrypted and written below, for security purposes! ;-p
+---
+- hosts: doozer
+  vars:
+    target_user: pi
+    ignore_python_version: false 
+    ignore_architecture: false
+    smb_sharepath: /home/doozer/smbshare
+    samba_users:
+      - username: doozer
+        password: doozer
+
+  tasks:
+    - name: Install samba dependencies
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      become: true
+      with_items:
+        - samba
+        - samba-common-bin
+
+    - name: Create a samba share directory
+      ansible.builtin.file:
+        path: "{{ smb_sharepath }}"
+        state: directory
+        mode: '0755'
+
+    - name: Setup samba share config
+      ansible.builtin.blockinfile:
+        path: /etc/samba/smb.conf
+        block: |
+          [pi-share]
+          path={{ smb_sharepath }}
+          writable=yes
+          create mask=0775
+          directory mask=0775
+          public=no
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - samba setup"
+        create: yes
+      become: true
+
+    - name: Create Samba user
+      shell:
+        cmd: "printf '{{ item.password }}\n{{ item.password }}\n' | smbpasswd -a {{ item.username }}"
+      loop: "{{ samba_users }}"
+      become: true
+      no_log: true
+      register: samba_create_users
+      changed_when: "'Added user' in samba_create_users.stdout"
+
+    - name: Make sure a service unit is running
+      ansible.builtin.systemd_service:
+        name: smbd
+        state: restarted
+      become: true
+    
