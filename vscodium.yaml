@@ -1,0 +1,31 @@
+# vscodium
+# Installing and configging vscodium
+# @src: https://codeberg.org/ansible/editor-vscodium/src/branch/main/tasks/install.yml
+---
+- hosts: doozer
+  vars:
+    target_user: pi
+    ignore_python_version: false 
+    ignore_architecture: false
+
+  tasks:
+    - name: Add VSCodium's GPG key.
+      ansible.builtin.shell:
+        cmd: 'wget -qO - https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg | gpg --dearmor | sudo dd of=/usr/share/keyrings/vscodium-archive-keyring.gpg'
+      args:
+        creates: /usr/share/keyrings/vscodium-archive-keyring.gpg
+      become: true
+   
+    - name: Add VSCodium's repository to apt sources.
+      ansible.builtin.shell:
+        cmd: "echo 'deb [ signed-by=/usr/share/keyrings/vscodium-archive-keyring.gpg ] https://download.vscodium.com/debs vscodium main' | sudo tee /etc/apt/sources.list.d/vscodium.list"
+      args:
+        creates: /etc/apt/sources.list.d/vscodium.list
+      become: true
+
+    - name: Update and install VS codium
+      ansible.builtin.apt:
+        update_cache: yes
+        name: codium
+        state: present
+      become: true

@@ -46,14 +46,16 @@ Now you can run playbooks from your client machine to configure your pi (assumin
 
 Now, you can use ansible to configure your networked pi and set it up for stuff!
 
-We have kept the playbooks focussed on a singular task to try to make it easier for someone who doesn't know ansible to learn to use it gradually, and to therefore gain confidence with researching and developing their own little computer for their own research software engineering project.
+I kept the playbooks focussed on a singular task to try to make it easier for myself to understand as I grasped how ansible worked and what the purpose of using it as an abstraction control layer was.
 
 Too much generalisation and too much abstraction is confusing and inhibits learning.
 Keep it simple.
 Keep automation to one or two tasks at a time.
 Understand how the tasks relate to each other.
 Understand how the system components relate to each other.
-Understand your tools and methods.
+Comprehend your tools and methods.
+
+Abstraction of network operations, which consider attention towards the TCP/IP stack, are useful to always keep in mind when working with computers and software. It's surprising how plugged in your machines have to be to get close to machine learning on their own.
 
 <br />
 
@@ -74,9 +76,9 @@ The YAML playbooks in this directory can be used to configure the system for one
 
 There are a number of ways to configure your software tools. How many abstractions you use is up to you. Understanding the cost/benefits of software abstractions is important. Software is not easily separated from it's host operating system.
 
-Now use ansible install the following software tooling:
+Now use ansible to install the following software tooling:
 
 - jupyterlab
 - TFLite + Coral TPU device drivers
-- 
+- 2TB networked swap memory
 - 
