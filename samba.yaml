@@ -5,9 +5,6 @@
 ---
 - hosts: doozer
   vars:
-    target_user: pi
-    ignore_python_version: false 
-    ignore_architecture: false
     smb_sharepath: /home/doozer/smbshare
     samba_users:
       - username: doozer
@@ -27,7 +24,7 @@
       ansible.builtin.file:
         path: "{{ smb_sharepath }}"
         state: directory
-        mode: '0755'
+        mode: '0775'
 
     - name: Setup samba share config
       ansible.builtin.blockinfile:
