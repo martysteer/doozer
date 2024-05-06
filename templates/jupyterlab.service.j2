@@ -1,0 +1,15 @@
+[Unit]
+Description=JupyterLab
+After=syslog.target network.target
+
+[Service]
+Type=simple
+PIDFile=/run/jupyter.pid
+User=doozer
+Environment="PATH=/home/doozer/.pyenv/plugins/pyenv-virtualenv/shims:/home/doozer/.pyenv/shims:/home/doozer/.pyenv/bin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+ExecStart=/home/doozer/.pyenv/versions/jupyterlab-vm/bin/jupyter lab --config /home/doozer/.jupyter/jupyter_lab_config.py
+
+[Install]
+WantedBy=multi-user.target
+
+

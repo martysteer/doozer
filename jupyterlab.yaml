@@ -1,0 +1,93 @@
+# Jupyerlab
+# Installs jupyterlab in a pyenv managed environment and hosts the kernel on port 8888
+---
+- hosts: doozer
+  vars:
+    py_version: 3.8.4
+    jupyter_vm: jupyterlab-vm
+    py_scripts_dir: /home/doozer/smbshare
+
+  tasks:
+    - name: Install python {{ py_version }}
+      ansible.builtin.shell: 
+        cmd: . ~/.zshrc && pyenv install {{ py_version }}
+      args:
+        executable: /bin/zsh
+        creates: "~/.pyenv/versions/{{ py_version }}"
+
+    - name: Set global python version to {{ py_version }}
+      ansible.builtin.shell: 
+        cmd: . ~/.zshrc && pyenv global {{ py_version }}
+      args:
+        executable: /bin/zsh
+        creates: "~/.pyenv/version"
+
+    - name: Create a virtual environment for jupyterlab
+      ansible.builtin.shell:
+        cmd: ". ~/.zshrc && pyenv virtualenv {{ py_version }} {{ jupyter_vm }}"
+      args:
+        executable: /bin/zsh
+        creates: "~/.pyenv/versions/{{ py_version }}/envs/{{ jupyter_vm }}"
+
+    - name: Install jupyterlab into the virtual env.
+      ansible.builtin.shell:
+        cmd: |
+          . ~/.zshrc && pyenv shell {{ jupyter_vm }} && 
+          pip install ipykernel ipywidgets jupyterlab &&
+          ipython kernel install --user --name {{ jupyter_vm }}
+      args:
+        executable: /bin/zsh
+        creates: ~/.pyenv/shims/jupyter
+
+    - name: Configure jupyterlab.
+      ansible.builtin.shell:
+        cmd: |
+          . ~/.zshrc && 
+          pyenv shell {{ jupyter_vm }} && 
+          jupyter lab --generate-config
+      args:
+        executable: /bin/zsh
+        creates: ~/.jupyter/jupyter_lab_config.py
+
+    - name: Alter jupyter_lab_config.py file
+      ansible.builtin.blockinfile:
+        path: ~/.jupyter/jupyter_lab_config.py
+        block: |
+          c.ServerApp.ip = '0.0.0.0' # listen on all IPs
+          c.IdentityProvider.token = '' # disable authentication
+          c.ServerApp.allow_origin = '*' # allow access from anywhere
+          c.NotebookApp.disable_check_xsrf = True # allow cross-site requests
+          c.NotebookApp.port = 8888 # Set port
+          c.NotebookApp.notebook_dir = '{{ py_scripts_dir }}'
+          c.MultiKernelManager.default_kernel_name = '{{ jupyter_vm }}'
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - jupyterlab local server configs"
+        create: yes
+
+
+
+    - name: Create directory for systemd service file
+      ansible.builtin.file:
+        path: "~/.pyenv/versions/{{ py_version }}/envs/{{ jupyter_vm }}/etc/systemd"
+        state: directory
+        mode: '0755'
+
+    - name: Copy template jupyterlab service file
+      ansible.builtin.template:
+        src: "./templates/jupyterlab.service.j2"
+        dest: "/home/doozer/.pyenv/versions/{{ py_version }}/envs/{{ jupyter_vm }}/etc/systemd/jupyterlab.service"
+        mode: '0644'
+
+    - name: Create a symbolic link to jupyterlab service file
+      ansible.builtin.file:
+        src: "/home/doozer/.pyenv/versions/{{ py_version }}/envs/{{ jupyter_vm }}/etc/systemd/jupyterlab.service"
+        dest: /etc/systemd/system/jupyterlab.service
+        state: link
+      become: yes
+
+    - name: Start jupyter service for http://doozer:8080/lab
+      ansible.builtin.systemd_service:
+        enabled: true
+        state: started
+        name: jupyterlab
+        daemon_reload: true
+      become: true
