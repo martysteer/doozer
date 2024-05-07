@@ -55,7 +55,7 @@ Understand how the tasks relate to each other.
 Understand how the system components relate to each other.
 Comprehend your tools and methods.
 
-Abstraction of network operations, which consider attention towards the TCP/IP stack, are useful to always keep in mind when working with computers and software. It's surprising how plugged in your machines have to be to get close to machine learning on their own.
+Abstraction of network operations, which consider attention towards the TCP/IP stack, are useful to always keep in mind when working with computers and software. It's surprising how plugged in your machines have to be to get close to machine learning when they are airgapped on their own.
 
 <br />
 
@@ -78,7 +78,9 @@ There are a number of ways to configure your software tools. How many abstractio
 
 Now use ansible to install the following software tooling:
 
-- jupyterlab
+- jupyterlab - kind of working. jupyter.yaml playbook installs jupyter lab into a pyenv managed python 3.8.4 virtual environment, and sets up a systemd service. This works fine and jupyter lab starts up on boot. Adding other kernels into it from other pyenv virtual envs isn't fully working properly.
+- Hi-SAM heirarchical segment anything model project - this sets up separate pyenv environment, installs the code, and requirements (pytorch CPU only at the moment) and downloads the pretrained checkpoint files (about 16 large .pth files totalling approx. 6GB)
+- 
 - TFLite + Coral TPU device drivers
-- 2TB networked swap memory
+- 
 - 
