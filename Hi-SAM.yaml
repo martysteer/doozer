@@ -1,0 +1,98 @@
+# Hi-SAM: Marrying Segment Anything Model for Hierarchical Text Segmentation
+# Installs Hi-SAM in a pyenv managed environment and adds kernel to jupyterlab
+# @src: https://github.com/ymy-k/Hi-SAM
+# This playbook is not working yet... 2024-05-07
+---
+- hosts: doozer
+  vars:
+    hi_sam_py_version: 3.8.19
+    hi_sam_vm: hi-sam-vm
+    jupyter_vm: jupyterlab-vm
+    smb_sharepath: ~/smbshare
+    py_scripts_dir: /home/doozer/smbshare/Hi-SAM
+
+  tasks:
+    - name: Install python {{ hi_sam_py_version }}
+      ansible.builtin.shell: 
+        cmd: . ~/.zshrc && pyenv install {{ hi_sam_py_version }}
+      args:
+        executable: /bin/zsh
+        creates: "~/.pyenv/versions/{{ hi_sam_py_version }}"
+
+    - name: Create {{ hi_sam_vm }} virtual environment
+      ansible.builtin.shell:
+        cmd: ". ~/.zshrc && pyenv virtualenv {{ hi_sam_py_version }} {{ hi_sam_vm }}"
+      args:
+        executable: /bin/zsh
+        creates: "~/.pyenv/versions/{{ hi_sam_py_version }}/envs/{{ hi_sam_vm }}"
+
+    - name: Install ipykernel and register the virtual env.
+      ansible.builtin.shell:
+        cmd: |
+          . ~/.zshrc && pyenv shell {{ hi_sam_vm }} && 
+          pip install ipykernel &&
+          ipython kernel install --user --name {{ hi_sam_vm }}
+      args:
+        executable: /bin/zsh
+        creates: "~/.local/share/jupyter/kernels/{{ hi_sam_vm }}/kernel.json"
+
+    - name: Bounce the jupyter service for http://doozer:8080/lab
+      ansible.builtin.systemd_service:
+        state: restarted
+        name: jupyterlab
+      become: true
+
+    - name: chckout ymy-k/Hi-SAM git repo
+      ansible.builtin.git:
+        repo: 'https://github.com/ymy-k/Hi-SAM.git'
+        dest: '{{ smb_sharepath }}/Hi-SAM'
+
+    - name: set pyenv local {{ hi_sam_vm }} in the hisam directory
+      ansible.builtin.shell:
+        cmd: |
+          . ~/.zshrc && cd {{ smb_sharepath }}/Hi-SAM && pyenv local {{ hi_sam_vm }}
+      args:
+        executable: /bin/zsh
+        creates: '{{ smb_sharepath }}/Hi-SAM/.python-version'
+
+    - name: pip install Hi-SAM/requirements.txt
+      ansible.builtin.shell:
+        cmd: |
+          . ~/.zshrc && pyenv shell {{ hi_sam_vm }} && 
+          pip install -r {{ smb_sharepath }}/Hi-SAM/requirements.txt
+      args:
+        executable: /bin/zsh
+    
+    - name: download Hi-SAM pretrained checkpoint (x13 .pth files)
+      ansible.builtin.get_url:
+        url: '{{ item.value }}'
+        dest: '{{ smb_sharepath }}/Hi-SAM/pretrained_checkpoint/{{ item.key }}'
+      with_dict: '{{ vars.download_files }}'
+      vars:
+        download_files:
+          sam_tss_b_totaltext.pth: https://6mbjgw.dm.files.1drv.com/y4m8wuvjOJAAVl91ZZc2KcqO8NBtYjxvnj2lM1C806sr1Asn3gaY6FGMz9ZjEn8WSoRWXXJVY_zREY4N-71Ej7C3K8-QHFimuRYQwOAYr_fC3ujiEQKFRCAaX0tUGAwo8dq_ZY8OO30Vmk8cqLvCi3kLljwL1QWN5DSsw-gVhxg2A6NUJcdw3ESKpWYCn0Is5OcYZzJbZthZcLfE7vK1qnf0A
+          sam_tss_l_totaltext.pth: https://62bmgw.dm.files.1drv.com/y4mSHo-vZfmnMX9yCJDsLKSu7GQwKj35n0ygDTEH3A1cPWFBHWFYbvrYEX48eP4eUH4kp9Anpq29wrj6mQEoASUXMiaQpSqqO2T7hQ6rwMnq4liJg1G3oAhqAo8IOnZT5MTxtUSwDABKnU1TKavU2qhO499Ebog4ik-iEfOCkkGAErEK1ctEDbl8m_YXddk6lrAPx56eVXhxXcheHdtUtRhwg
+          sam_tss_h_totaltext.pth: https://6mbtgw.dm.files.1drv.com/y4mb0YOLxnfrdAq7iN426AeVc9Gc5mkOMeo_Zu92qYTYZGlVtwCjRVUo3EWsafB800PkTEg33S8tvU_QwDdnHqLvby8oXOt0c_W3JiFGuk7j2GRfRsSopCbGXC4I_xgKbjNKvi-nhkW-L--yy3IMQgdawL2cF9AwCw46nnjJjx-QWQDU18B0F6aVhMAFApsAp9jU5cfMKX0_tZ437jP3CB3Kg
+          sam_tss_b_textseg.pth: https://6mbhgw.dm.files.1drv.com/y4mX4T8tHqDq4rPUcOsr7XLmXPsoAbg7duOg25FrD1q4y44nabzC8Vd2fxVpw-ck9FYzjXwozWSUqqk_KltFdeoIZLRq88izcw1a9L929Tw5L7RMQ2pSY_uMZ91lhCWXnGarG61iBE8tMuW7MGL-jIUtbhpYKRwUGJilBLFeXt8oyg1J3RDx944rKwekcwM9wsLknTlxU_PvEfDUVrySgxhww
+          sam_tss_l_textseg.pth: https://62blgw.dm.files.1drv.com/y4m9jy7cxkO69graMRAhQiPtbvJcU_7CKhZrrELLX2pTh1pbhIOLoOQpFrq_MzOXCmcXqt3EJa2Db9tfdG3PTaXu8JIf4rqHsOv-xR2tmbrB700I3RdlHKI2Wq_xx4QEtOXumiM6xD6PO4NlI2NzmUjGdRZ1MC5JPajHfgfztAY_j_Jn2AbeHHL-bWVAJUa-20cArtzA3a3rTuF0aS2UCXbUQ
+          sam_tss_h_textseg.pth: https://6mbugw.dm.files.1drv.com/y4mKxdrLiLzUX3Y6T6sfLK9JZ6g3Jet6NEKgr1p7zZfToDbWBywyelEWE2JCBe-eoWnuMOSqRRZ6cSOQAsDq7yOfRZJXotxoCoXxIBtojMyDg9VSzxkgh941xrGMEZIE8vuxAReBb5q7Qid1D_1KB6Bh84XFCNiU15c1azw43_Jkxu-r-P9JMDXAfDzEZTTNS2wzylx0JydzcsFRBS-nGGLXQ
+          sam_tss_b_hiertext.pth: https://6mbngw.dm.files.1drv.com/y4mVNtzxzuxG0_FiRVb-spnC_s0MTQDB3-PkIG6QxDJ4TpIVE9lXxshRmGyMitr_rhXkgDwUeM4kF_D8qU4z91ergjtvGFUa-1UJZUD3AuOAGgq6L2vp1k4MvYnjV4itCjJww38m2pe6D4SOFCX8Odw-8v2m5AdQLFFv70Xmmmm2Ig_LChJr890dZnIYevICsyJUWiDMyvKpB2m5_buFA7mug
+          sam_tss_l_hiertext.pth: https://62bngw.dm.files.1drv.com/y4mgG1o9QOUonMP5r85sp_XIT9Q-X4-Gq-djMsSBd5MgXCFqc9Fsb2fJoGRuDVb0gzklkICAnkGkCStEcKaeiVIqFgqrDwMhaxMJC9Y2O9TdSlAM_aeeSAm3xcqkkx6EoJyiroZt90rpEh4aEh3vSiy9MwlclRERMWcrh8cB1XTJLKDuVMrSPeieOJ9f9NGuYreZtlokWcQPEI7v4Z7tJzBUg
+          sam_tss_h_hiertext.pth: https://6mbkgw.dm.files.1drv.com/y4mPuoHnNg39bdF6Xv-zkNoe7eGYt3SzTbJvxxxc94skI4mDOF839gDFBvJyYE3UEoJ8zj1iRnIWNLyfiLMq4Q8kaar0PR7wExfPYAmFaiZR5Lq5IstTArpPfijpl0mzPwYxtSX6d38HYQnAQD3tK3t7vZE6AhHlM6pb83bvpCeGasV_wLFmxvrAeoOLsjwOcGUVA8QCl4osQZcXEGPq08W1w
+          efficient_hi_sam_s.pth: https://7mbigw.dm.files.1drv.com/y4m3xzW1Xol-vzDAv6GLjCm4tyiiObKWiCYGXQK6d6uPclh9otQN_JdS_3d2zVaRX2ycLSinjDp4hrnvY3M7ka7gt_zu2ZNnz5ewYni4lbJltA1K26CzNYy-mDPqX2RXaBtDqQgKqL8iC_SUyM3XzmF9Ha6Wtt17qBz9XXMN-SlE8c5IE8lvLqBLOHuk_G_9gEIgfJQqsBqQ8U5Td8eQXA2xw
+          hi_sam_b.pth: https://6mblgw.dm.files.1drv.com/y4mkZwctKUpsPEIysm1o1aWqBGifOsovO73t-KwH-DWBCn3jqURp2ARjgK9W4K-y-1MaeyFGssahWwfEMx5kV0HlV8d0zUBwISlA59i8h4BK3ghljd17TDUOb6Kxvnk3c-qfkom4OUhPlDKwt0B508ylJLmwo-n1f2QuiyvfqJ8NCTdz26G-h2OyGxJXfk02sc2cB1PHxNKvpjpDaGW4MOPbg
+          hi_sam_l.pth: https://6mbogw.dm.files.1drv.com/y4mE8qA2hw8DiObHm3rRa1c5EK-MiEJWpSph8ok1Jp9Cl83GPZGbA7yrevS9L-_DAhiYI8VBckW-X1cvtH_EtXFEKrA6nn7ykXJrJXyU_G2MMhis5bTQ0jQ6YSLRgiwuabcFpBd8RyTWU4dLibUrS7io5VMnxKkaPnZKknamayvDyXQB02SsjA1POf7JrlxU0O4jNbkPJqh3EebPL_SgqPF0Q
+          hi_sam_h.pth: https://6mbigw.dm.files.1drv.com/y4m-1jTiu2gEOVKtEC3VzqNWMY9_PISPGu6WUhGiyw8j-8CBZSJ1qthdG7bi7cK6yj9fhQrG0o1Del2AIBwLnfqUhuUMvdkYgT4krqtAT7Xuj3Lea6q9G5hOmm4nIQEbFPlcKwRvaCMNNgkUgAcHDGNoe3m24wpEXbF1lG92tn_9rZzdUDZjhuqDSKpXqAH5nFV2KTe_0T4T9IDn09g9GhEpw
+
+
+    - name: download SAM pretrained checkpoint (3 large .pth files)
+      ansible.builtin.get_url:
+        url: '{{ item.value }}'
+        dest: '{{ smb_sharepath }}/Hi-SAM/pretrained_checkpoint/{{ item.key }}'
+      with_dict: '{{ vars.download_files }}'
+      vars:
+        download_files:
+          sam_vit_h_4b8939.pth: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+          sam_vit_l_0b3195.pth: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth
+          sam_vit_b_01ec64.pth: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
+       
