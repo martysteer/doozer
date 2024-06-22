@@ -1,0 +1,71 @@
+# Datasette and llm
+# @src: https://docs.datasette.io/en/stable/getting_started.html
+# 
+---
+- hosts: doozer
+  vars:
+    llm_py_version: 3.9.16
+    llm_vm: datasette-llm-vm
+
+  tasks:
+    - name: Install python {{ llm_py_version }}
+      ansible.builtin.shell: 
+        cmd: . ~/.zshrc && pyenv install {{ llm_py_version }}
+      args:
+        executable: /bin/zsh
+        creates: "~/.pyenv/versions/{{ llm_py_version }}"
+
+    - name: Create {{ llm_vm }} virtual environment
+      ansible.builtin.shell:
+        cmd: ". ~/.zshrc && pyenv virtualenv {{ llm_py_version }} {{ llm_vm }}"
+      args:
+        executable: /bin/zsh
+        creates: "~/.pyenv/versions/{{ llm_py_version }}/envs/{{ llm_vm }}"
+
+    - name: Install libraries.
+      ansible.builtin.shell:
+        cmd: 
+          datasette
+          llm
+      args:
+        executable: /bin/zsh
+        creates: "~/.local/share/jupyter/kernels/{{ llm_vm }}/kernel.json"
+
+
+# https://simonwillison.net/2023/Sep/4/llm-embeddings/
+pip install llm
+llm install llm-sentence-transformers
+llm install llm-cluster
+
+llm install llm-gpt4all
+llm install llm-llama-cpp
+# CMAKE_ARGS="-DLLAMA_METAL=on" FORCE_CMAKE=1 llm install llama-cpp-python  # for macos
+
+# view the list of models
+llm models
+
+# download a few models
+# Meta-Llama-3-8B-Instruct
+# llm llama-cpp download-model \
+  # https://huggingface.co/TheBloke/Llama-2-7b-Chat-GGUF/resolve/main/llama-2-7b-chat.Q6_K.gguf \
+  # --alias llama2-chat --alias l2c --llama2-chat
+llm "hi there" -m all-MiniLM-L6-v2
+llm aliases set miniembed6 all-MiniLM-L6-v2
+
+llm  "hi there" -m nomic-embed-text-v1
+llm aliases set nomic-embed nomic-embed-text-v1
+
+
+# embed the corpus a couple of times in different ways, using different models
+# but saving into the same database file. (explore that file using datasette later)
+llm embed-multi tricodes --model sentence-transformers/all-MiniLM-L6-v2 --files ./build/pdftext '*.txt' --store -d ./build/tricodes.db
+
+# then find documents similar to keyword searches or questions.
+
+
+# or generate clusters and cluster names by asking an LLM to summarise it.
+llm cluster --database build/tricodes.db --summary --model Meta-Llama-3-8B-Instruct --prompt "Give me a single term academic category for these documents." marxengels-bert 1 > build/one-custers.json
+
+
+
+

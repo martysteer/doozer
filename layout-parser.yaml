@@ -1,0 +1,112 @@
+# layout-parser: A Unified Toolkit for Deep Learning Based Document Image Analysis
+# Installs layout-parser in a pyenv managed environment and adds kernel to jupyterlab
+# Also downloads some models and installs detectron2.
+# @src: https://layout-parser.github.io/
+# 
+---
+- hosts: doozer
+  vars:
+    lp_py_version: 3.9.16
+    lp_vm: layoutparser-vm
+    jupyter_vm: jupyterlab-vm
+    smb_sharepath: ~/smbshare
+    py_scripts_dir: /home/doozer/smbshare/layout-parser
+
+  tasks:
+    - name: Install python {{ lp_py_version }}
+      ansible.builtin.shell: 
+        cmd: . ~/.zshrc && pyenv install {{ lp_py_version }}
+      args:
+        executable: /bin/zsh
+        creates: "~/.pyenv/versions/{{ lp_py_version }}"
+
+    - name: Create {{ lp_vm }} virtual environment
+      ansible.builtin.shell:
+        cmd: ". ~/.zshrc && pyenv virtualenv {{ lp_py_version }} {{ lp_vm }}"
+      args:
+        executable: /bin/zsh
+        creates: "~/.pyenv/versions/{{ lp_py_version }}/envs/{{ lp_vm }}"
+
+    - name: Install libraries.
+      ansible.builtin.shell:
+        cmd: 
+          jupyterlab
+          layout-parser
+          effdet
+          -U ipywidgets
+          pycocotools
+          pip install "pillow<=9.5.0". # https://github.com/tensorflow/models/issues/11040
+
+      args:
+        executable: /bin/zsh
+        creates: "~/.local/share/jupyter/kernels/{{ lp_vm }}/kernel.json"
+
+
+
+    - name: download Hi-SAM pretrained checkpoint (x13 .pth files)
+      ansible.builtin.get_url:
+        url: '{{ item.value }}'
+        dest: '{{ smb_sharepath }}/Hi-SAM/pretrained_checkpoint/{{ item.key }}'
+      with_dict: '{{ vars.download_files }}'
+      vars:
+        download_files:
+          https://dax-cdn.cdn.appdomain.cloud/dax-publaynet/1.0.0/PubLayNet.html
+
+
+
+Install the annotation annotation-service
+https://github.com/Layout-Parser/annotation-service?tab=readme-ov-file       
+
+
+https://stackoverflow.com/questions/76098441/detectron2-pre-trained-model-using-layoutparser-in-docker-container-error-check
+
+https://github.com/microsoft/table-transformer
+https://github.com/NielsRogge/Transformers-Tutorials/tree/master/Donut
+https://github.com/facebookresearch/detectron2/blob/main/INSTALL.md
+https://github.com/haotian-liu/LLaVA/blob/main/docs/MODEL_ZOO.md#llava-v16
+https://towardsdatascience.com/auto-parse-and-understand-any-document-5d72e81b0be9
+https://github.com/facebookresearch/segment-anything?tab=readme-ov-file
+https://github.com/mozilla/pdf.js/wiki/Additional-Learning-Resources
+https://tesseract-ocr.github.io/tessdoc/Installation.html
+https://medium.com/@henriquebastos/the-definitive-guide-to-setup-my-python-workspace-628d68552e14
+
+https://stackoverflow.com/questions/76910803/layout-parser-basic-api-test-code-throws-weird-error
+
+```bash
+pyenv install 3.7
+pyenv virtualenv 3.7.17 layoutparser-vm
+python -m pip install --upgrade pip
+python -m pip install --upgrade setuptools
+pip install jupyterlab
+
+
+
+pip install layoutparser
+pip install "layoutparser[layoutmodels]"
+pip install "layoutparser[ocr]"
+pip install "layoutparser[paddledetection]"
+
+pip install torch==1.10.1 torchvision==0.11.2 torchaudio==0.10.1
+
+
+python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.10/index.html
+
+pip install "detectron2@git+https://github.com/facebookresearch/detectron2.git@v0.5#egg=detectron2"
+
+```
+
+
+okay, so load_pdf(load_images=True) flag imports pdf2image, which internally seems to
+use poppler command line utils (which inturn use pdftoppm and pdftocairo via the poppler-util package!)
+wow... what a mess of internalised pythong/binary dependencies.builtin
+
+Error: Cannot install poppler because conflicting formulae are installed.
+  xpdf: because poppler, pdftohtml, pdf2image, and xpdf install conflicting executables
+
+Please `brew unlink xpdf` before continuing.
+
+
+
+https://arxiv.org/html/2403.15378v2
+
+

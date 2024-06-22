@@ -46,20 +46,13 @@
         path: ~/.bashrc
         block: |
           export PYENV_ROOT="$HOME/.pyenv"
-          export PATH="$PYENV_ROOT/bin:$PATH"
+          [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
           eval "$(pyenv init -)"
           eval "$(pyenv virtualenv-init -)"
         marker: "# {mark} ANSIBLE MANAGED BLOCK - pyenv setup"
         create: yes
-
-    - name: Setup pyenv environment in .zshrc file
-      ansible.builtin.blockinfile:
-        path: ~/.zshrc
-        block: |
-          export PYENV_ROOT="$HOME/.pyenv"
-          export PATH="$PYENV_ROOT/bin:$PATH"
-          eval "$(pyenv init -)"
-          eval "$(pyenv virtualenv-init -)"
-        marker: "# {mark} ANSIBLE MANAGED BLOCK - pyenv setup"
-        create: yes
-
+      with_items:
+        - ~/.bashrc
+        - ~/.bash_profile
+        - ~/.zshrc
+        - ~/.zprofile

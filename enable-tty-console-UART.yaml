@@ -1,0 +1,27 @@
+# Put some config lines into config files to change PiOS firmware bootstrap
+# On Pi5 there is a dedicated UART plug socket, so you need to redirect (or symlink)
+# the device tree to another, and tell the confix.txt file about that.
+#
+# $ ansible-playbook enable-tty-console-UART.yml -vv
+---
+- hosts: doozer
+  vars:
+    target_user: pi
+    ignore_python_version: false 
+    ignore_architecture: false
+
+  tasks:
+    - name: "Open and edit the configuration file. Enable TTY console for pi5 {{ vars.swapsize }}."
+      ansible.builtin.blockinfile:
+        path: /boot/firmware/config.txt
+        block: |
+          [pi5]
+          # @see Use the RPi5 serial ports: https://www.youtube.com/watch?v=27p4XHE3iyw
+          # @see https://forums.raspberrypi.com/viewtopic.php?t=362821#p2176626
+          # @src Kunika's email instructions, 2024-06-22
+          enable_uart=1         # Enable shell messages on the serial connection
+          dtparam=uart0=on      # Enable UART0/ttyAMA0 on GPIO 14 & 15
+          dtparam=uart0_console # Enable UART0/ttyAMA0 on GPIO 14 & 15 and make it the console UART
+      become: true
+      register: conf_pi5_tty
+
